@@ -47,6 +47,7 @@ inline static bool operator==(const geometry_msgs::Point& one,
   double dist = sqrt(dx * dx + dy * dy);
   return dist < 0.01;
 }
+
 double euclideanDistance(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2) {
   return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
 }
@@ -194,19 +195,29 @@ void Explore::makePlan()
   auto pose = costmap_client_.getRobotPose();
   // get frontiers sorted according to cost
   auto frontiers = search_.searchFrom(pose.position);
-  ROS_DEBUG("found %lu frontiers", frontiers.size());
-  for (size_t i = 0; i < frontiers.size(); ++i) {
-    ROS_DEBUG("frontier %zd cost: %f", i, frontiers[i].cost);
-  }
 
   // exploration termination condition;
   if (frontiers.size() < termination_num){
     stop();
     return;
   }
+
+  // a new frontier list for filtering frontiers only within the filter_radius of robot
+  std::vector<frontier_exploration::Frontier> filtered_frontiers;
+  double radius_ = 8.0;
+  radius_ = filter_radius;
+
+  ROS_DEBUG("found %lu frontiers from whole map\n", frontiers.size());
+  for (size_t i = 0; i < frontiers.size(); ++i) {
+    ROS_DEBUG("whole map frontier %zd cost: %f", i, frontiers[i].cost);
     if (euclideanDistance(pose.position, frontiers[i].centroid) <= radius_) {
       filtered_frontiers.push_back(frontiers[i]);
     }
+  }
+  ROS_DEBUG("filtered frontiers within filter_radius: %lu", filtered_frontiers.size());
+  // for (size_t i = 0; i < filtered_frontiers.size(); ++i) {
+  //   ROS_DEBUG("filtered frontier %zd cost: %f", i, filtered_frontiers[i].cost);
+  // }
 
   if (filtered_frontiers.size() <= radius_switch_num ) {
     radius_ = wholemap_radius;
@@ -220,17 +231,28 @@ void Explore::makePlan()
     ROS_DEBUG("****** current radius is --- %.2f\n********", radius_);
   }
 
-  // publish frontiers as visualization markers
-  if (visualize_) {
-    visualizeFrontiers(frontiers);
-  }
+  // if (frontiers.empty()) {
+  //   stop();
+  //   return;
+  // }
+  
 
+  // publish frontiers as visualization markers
+  // if (filtered_frontiers.size() > termination_num){
+  //   if (visualize_) {
+  //     visualizeFrontiers(filtered_frontiers);
+  //   }
+  // }
+  if (visualize_) {
+      visualizeFrontiers(filtered_frontiers);
+  }
   // find non blacklisted frontier
   auto frontier =
-      std::find_if_not(frontiers.begin(), frontiers.end(),
-                       [this](const frontier_exploration::Frontier& f) {
-                         return goalOnBlacklist(f.centroid);
-                       });
+      std::find_if_not(filtered_frontiers.begin(), filtered_frontiers.end(),
+                      [this](const frontier_exploration::Frontier& f) {
+                        return goalOnBlacklist(f.centroid);
+                      });
+  
   // TODO: check this stop condition 
   if (frontier == filtered_frontiers.end()) {
     stop();
@@ -271,10 +293,16 @@ void Explore::makePlan()
                 const move_base_msgs::MoveBaseResultConstPtr& result) {
         reachedGoal(status, result, target_position);
       });
+
 }
+  
+
+  
+
 
 bool Explore::goalOnBlacklist(const geometry_msgs::Point& goal)
 {
+  // TODO: explore the funactionality by change of tolerance;
   constexpr static size_t tolerace = 5;
   costmap_2d::Costmap2D* costmap2d = costmap_client_.getCostmap();
 
