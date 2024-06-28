@@ -198,6 +198,18 @@ void Explore::makePlan()
       filtered_frontiers.push_back(frontiers[i]);
     }
 
+  if (filtered_frontiers.size() <= radius_switch_num ) {
+    radius_ = wholemap_radius;
+    filtered_frontiers = frontiers; // Pass all the frontiers to pick from. 
+    ROS_INFO("****Not enough frontiers within the filter radius || Expanding search to whole map\n****");
+    ROS_DEBUG("****** current radius is --- %.2f\n********", radius_);
+  }
+  else{
+    ROS_INFO("****Picking a frontier within the filter radius \n****");
+    radius_ = filter_radius;
+    ROS_DEBUG("****** current radius is --- %.2f\n********", radius_);
+  }
+
   // publish frontiers as visualization markers
   if (visualize_) {
     visualizeFrontiers(frontiers);
