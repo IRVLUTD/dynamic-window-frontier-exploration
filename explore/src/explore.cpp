@@ -50,6 +50,10 @@ inline static bool operator==(const geometry_msgs::Point& one,
 double euclideanDistance(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2) {
   return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
 }
+double filter_radius;
+double radius_switch_num;
+double termination_num;
+double wholemap_radius;
 
 namespace explore
 {
@@ -71,7 +75,12 @@ Explore::Explore()
   private_nh_.param("orientation_scale", orientation_scale_, 0.0);
   private_nh_.param("gain_scale", gain_scale_, 1.0);
   private_nh_.param("min_frontier_size", min_frontier_size, 0.5);
+  private_nh_.param("filter_radius", filter_radius, 5.0);
+  private_nh_.param("radius_switch_num", radius_switch_num, 5.0);
+  private_nh_.param("termination_num", termination_num, 5.0);
+  private_nh_.param("wholemap_radius", wholemap_radius, 5.0);
 
+  ROS_INFO("Params: \n filter_radius: %f \n radius_switch_num: %f \n termination_num: %f", filter_radius, radius_switch_num, termination_num);
   search_ = frontier_exploration::FrontierSearch(costmap_client_.getCostmap(),
                                                  potential_scale_, gain_scale_,
                                                  min_frontier_size);
