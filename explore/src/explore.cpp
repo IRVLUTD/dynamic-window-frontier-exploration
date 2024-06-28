@@ -47,6 +47,9 @@ inline static bool operator==(const geometry_msgs::Point& one,
   double dist = sqrt(dx * dx + dy * dy);
   return dist < 0.01;
 }
+double euclideanDistance(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2) {
+  return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
+}
 
 namespace explore
 {
@@ -191,6 +194,9 @@ void Explore::makePlan()
     stop();
     return;
   }
+    if (euclideanDistance(pose.position, frontiers[i].centroid) <= radius_) {
+      filtered_frontiers.push_back(frontiers[i]);
+    }
 
   // publish frontiers as visualization markers
   if (visualize_) {
