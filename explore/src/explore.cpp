@@ -190,7 +190,8 @@ void Explore::makePlan()
     ROS_DEBUG("frontier %zd cost: %f", i, frontiers[i].cost);
   }
 
-  if (frontiers.empty()) {
+  // exploration termination condition;
+  if (frontiers.size() < termination_num){
     stop();
     return;
   }
@@ -221,7 +222,8 @@ void Explore::makePlan()
                        [this](const frontier_exploration::Frontier& f) {
                          return goalOnBlacklist(f.centroid);
                        });
-  if (frontier == frontiers.end()) {
+  // TODO: check this stop condition 
+  if (frontier == filtered_frontiers.end()) {
     stop();
     return;
   }
