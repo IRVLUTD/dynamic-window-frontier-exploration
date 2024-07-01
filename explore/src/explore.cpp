@@ -254,7 +254,7 @@ void Explore::makePlan()
                       });
   
   // TODO: check this stop condition 
-  if (frontier == filtered_frontiers.end()) {
+  if (frontier == filtered_frontiers.end() && (radius_ == wholemap_radius)) {
     stop();
     return;
   }
