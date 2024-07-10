@@ -8,6 +8,10 @@
 
 #include <explore/costmap_tools.h>
 
+double euclideanDistancee(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2) {
+  return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
+}
+
 namespace frontier_exploration
 {
 using costmap_2d::LETHAL_OBSTACLE;
@@ -75,9 +79,21 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
       } else if (isNewFrontierCell(nbr, frontier_flag)) {
         frontier_flag[nbr] = true;
         Frontier new_frontier = buildNewFrontier(nbr, pos, frontier_flag);
-        if (new_frontier.size * costmap_->getResolution() >=
-            min_frontier_size_) {
-          frontier_list.push_back(new_frontier);
+        // if (new_frontier.size * costmap_->getResolution() >=
+        //     min_frontier_size_) {
+        //   frontier_list.push_back(new_frontier);
+        // }
+        if (new_frontier.size * costmap_->getResolution() >= min_frontier_size_) {
+          bool too_close = false;
+          for (const auto& frontier : frontier_list) {
+            if (euclideanDistancee(new_frontier.centroid, frontier.centroid) < 3.0) {
+              too_close = true;
+              break;
+            }
+          }
+          if (!too_close) {
+            frontier_list.push_back(new_frontier);
+          }
         }
       }
     }
