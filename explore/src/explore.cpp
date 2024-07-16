@@ -38,6 +38,7 @@
 #include <explore/explore.h>
 
 #include <thread>
+#include <explore/distance.h>
 
 inline static bool operator==(const geometry_msgs::Point& one,
                               const geometry_msgs::Point& two)
@@ -48,9 +49,9 @@ inline static bool operator==(const geometry_msgs::Point& one,
   return dist < 0.01;
 }
 
-double euclideanDistance(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2) {
-  return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
-}
+// double euclideanDistance(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2) {
+//   return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
+// }
 double filter_radius;
 double radius_switch_num;
 double termination_num;
