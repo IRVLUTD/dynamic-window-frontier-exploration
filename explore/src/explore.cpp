@@ -39,6 +39,8 @@
 
 #include <thread>
 #include <explore/distance.h>
+#include <std_srvs/Empty.h>
+#include <std_msgs/Bool.h>
 
 inline static bool operator==(const geometry_msgs::Point& one,
                               const geometry_msgs::Point& two)
@@ -86,7 +88,7 @@ Explore::Explore()
   search_ = frontier_exploration::FrontierSearch(costmap_client_.getCostmap(),
                                                  potential_scale_, gain_scale_,
                                                  min_frontier_size);
-
+  termination_publisher = private_nh_.advertise<std_msgs::Bool>("exploration_termination", 10);
   if (visualize_) {
     marker_array_publisher_ =
         private_nh_.advertise<visualization_msgs::MarkerArray>("frontiers", 10);
@@ -197,8 +199,11 @@ void Explore::makePlan()
   // get frontiers sorted according to cost
   auto frontiers = search_.searchFrom(pose.position);
 
+  std_msgs::Bool exploration_termination;
   // exploration termination condition;
   if (frontiers.size() < termination_num){
+    exploration_termination.data = true;
+    termination_publisher.publish(exploration_termination);
     stop();
     return;
   }
