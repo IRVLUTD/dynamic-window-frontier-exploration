@@ -15,6 +15,7 @@
   <param name="radius_switch_num" value="3.0"/>
   <param name="termination_num" value="3.0"/>
   <param name="wholemap_radius" value="15.0"/>
+  <param name="cluster_radius" value="2.0"/>
 </node>
 <node pkg="explore_lite" type="savemap.py" name="savemap" output="screen">
 </node>
