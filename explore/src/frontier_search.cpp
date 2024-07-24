@@ -7,6 +7,11 @@
 #include <geometry_msgs/Point.h>
 
 #include <explore/costmap_tools.h>
+#include <explore/distance.h>
+
+// double euclideanDistancee(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2) {
+//   return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
+// }
 
 namespace frontier_exploration
 {
@@ -16,11 +21,12 @@ using costmap_2d::FREE_SPACE;
 
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
                                double potential_scale, double gain_scale,
-                               double min_frontier_size)
+                               double min_frontier_size, double min_frontier_spacing)
   : costmap_(costmap)
   , potential_scale_(potential_scale)
   , gain_scale_(gain_scale)
   , min_frontier_size_(min_frontier_size)
+  , min_frontier_spacing_(min_frontier_spacing)
 {
 }
 
@@ -75,9 +81,21 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
       } else if (isNewFrontierCell(nbr, frontier_flag)) {
         frontier_flag[nbr] = true;
         Frontier new_frontier = buildNewFrontier(nbr, pos, frontier_flag);
-        if (new_frontier.size * costmap_->getResolution() >=
-            min_frontier_size_) {
-          frontier_list.push_back(new_frontier);
+        // if (new_frontier.size * costmap_->getResolution() >=
+        //     min_frontier_size_) {
+        //   frontier_list.push_back(new_frontier);
+        // }
+        if (new_frontier.size * costmap_->getResolution() >= min_frontier_size_) {
+          bool too_close = false;
+          for (const auto& frontier : frontier_list) {
+            if (euclideanDistance(new_frontier.centroid, frontier.centroid) < min_frontier_spacing_) {
+              too_close = true;
+              break;
+            }
+          }
+          if (!too_close) {
+            frontier_list.push_back(new_frontier);
+          }
         }
       }
     }

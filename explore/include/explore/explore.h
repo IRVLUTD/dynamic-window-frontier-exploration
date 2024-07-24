@@ -89,6 +89,7 @@ private:
   ros::NodeHandle relative_nh_;
   ros::Publisher marker_array_publisher_;
   tf::TransformListener tf_listener_;
+  ros::Publisher termination_publisher;
 
   Costmap2DClient costmap_client_;
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>
@@ -105,7 +106,7 @@ private:
 
   // parameters
   double planner_frequency_;
-  double potential_scale_, orientation_scale_, gain_scale_;
+  double potential_scale_, orientation_scale_, gain_scale_, min_frontier_spacing_;
   ros::Duration progress_timeout_;
   bool visualize_;
 };
