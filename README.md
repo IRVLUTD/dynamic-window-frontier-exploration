@@ -1,5 +1,5 @@
 # dynamic-window-frontier-exploration
-This package is developed on top of the existing [explore_lite](https://wiki.ros.org/explore_lite) package.
+This package is developed on top of the existing [explore_lite](https://wiki.ros.org/explore_lite) package.  It leverages a dynamic window approach to efficiently explore unknown environments by identifying and navigating towards frontiers, while switching between a local and the global windows for improved realworld explolration. It also saves the explored map automatically once the exploration stops.
 
 The following parameters can be configured in the launch file to control the behavior of the exploration algorithm:
 
