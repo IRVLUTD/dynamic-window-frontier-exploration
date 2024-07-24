@@ -58,6 +58,7 @@ double filter_radius;
 double radius_switch_num;
 double termination_num;
 double wholemap_radius;
+double cluster_radius;
 
 namespace explore
 {
@@ -83,11 +84,12 @@ Explore::Explore()
   private_nh_.param("radius_switch_num", radius_switch_num, 5.0);
   private_nh_.param("termination_num", termination_num, 5.0);
   private_nh_.param("wholemap_radius", wholemap_radius, 5.0);
+  private_nh_.param("cluster_radius", cluster_radius, 2.0);
 
-  ROS_INFO("Params: \n filter_radius: %f \n radius_switch_num: %f \n termination_num: %f", filter_radius, radius_switch_num, termination_num);
+  ROS_INFO("Params: \n filter_radius: %f \n radius_switch_num: %f \n termination_num: %f \n cluster_radius: %f", filter_radius, radius_switch_num, termination_num, cluster_radius);
   search_ = frontier_exploration::FrontierSearch(costmap_client_.getCostmap(),
                                                  potential_scale_, gain_scale_,
-                                                 min_frontier_size);
+                                                 min_frontier_size, cluster_radius);
   termination_publisher = private_nh_.advertise<std_msgs::Bool>("exploration_termination", 10);
   if (visualize_) {
     marker_array_publisher_ =
