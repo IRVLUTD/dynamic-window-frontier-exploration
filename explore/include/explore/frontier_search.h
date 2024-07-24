@@ -35,7 +35,7 @@ public:
    * @param costmap Reference to costmap data to search.
    */
   FrontierSearch(costmap_2d::Costmap2D* costmap, double potential_scale,
-                 double gain_scale, double min_frontier_size, double cluster_radius);
+                 double gain_scale, double min_frontier_size, double min_frontier_spacing);
 
   /**
    * @brief Runs search implementation, outward from the start position
@@ -83,7 +83,7 @@ private:
   unsigned int size_x_, size_y_;
   double potential_scale_, gain_scale_;
   double min_frontier_size_;
-  double cluster_radius_;
+  double min_frontier_spacing_;
 };
 }
 #endif

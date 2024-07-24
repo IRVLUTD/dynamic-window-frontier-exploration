@@ -54,11 +54,11 @@ inline static bool operator==(const geometry_msgs::Point& one,
 // double euclideanDistance(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2) {
 //   return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
 // }
-double filter_radius;
-double radius_switch_num;
-double termination_num;
-double wholemap_radius;
-double cluster_radius;
+double local_frontier_filter_radius;
+double min_local_frontiers;
+double min_global_frontiers;
+double global_frontier_filter_radius;
+double min_frontier_spacing;
 
 namespace explore
 {
@@ -80,16 +80,16 @@ Explore::Explore()
   private_nh_.param("orientation_scale", orientation_scale_, 0.0);
   private_nh_.param("gain_scale", gain_scale_, 1.0);
   private_nh_.param("min_frontier_size", min_frontier_size, 0.5);
-  private_nh_.param("filter_radius", filter_radius, 5.0);
-  private_nh_.param("radius_switch_num", radius_switch_num, 5.0);
-  private_nh_.param("termination_num", termination_num, 5.0);
-  private_nh_.param("wholemap_radius", wholemap_radius, 5.0);
-  private_nh_.param("cluster_radius", cluster_radius, 2.0);
+  private_nh_.param("local_frontier_filter_radius", local_frontier_filter_radius, 5.0);
+  private_nh_.param("min_local_frontiers", min_local_frontiers, 5.0);
+  private_nh_.param("min_global_frontiers", min_global_frontiers, 5.0);
+  private_nh_.param("global_frontier_filter_radius", global_frontier_filter_radius, 5.0);
+  private_nh_.param("min_frontier_spacing", min_frontier_spacing, 2.0);
 
-  ROS_INFO("Params: \n filter_radius: %f \n radius_switch_num: %f \n termination_num: %f \n cluster_radius: %f", filter_radius, radius_switch_num, termination_num, cluster_radius);
+  ROS_INFO("Params: \n local_frontier_filter_radius: %f \n min_local_frontiers: %f \n min_global_frontiers: %f \n min_frontier_spacing: %f", local_frontier_filter_radius, min_local_frontiers, min_global_frontiers, min_frontier_spacing);
   search_ = frontier_exploration::FrontierSearch(costmap_client_.getCostmap(),
                                                  potential_scale_, gain_scale_,
-                                                 min_frontier_size, cluster_radius);
+                                                 min_frontier_size, min_frontier_spacing);
   termination_publisher = private_nh_.advertise<std_msgs::Bool>("exploration_termination", 10);
   if (visualize_) {
     marker_array_publisher_ =
@@ -203,17 +203,17 @@ void Explore::makePlan()
 
   std_msgs::Bool exploration_termination;
   // exploration termination condition;
-  if (frontiers.size() < termination_num){
+  if (frontiers.size() < min_global_frontiers){
     exploration_termination.data = true;
     termination_publisher.publish(exploration_termination);
     stop();
     return;
   }
 
-  // a new frontier list for filtering frontiers only within the filter_radius of robot
+  // a new frontier list for filtering frontiers only within the local_frontier_filter_radius of robot
   std::vector<frontier_exploration::Frontier> filtered_frontiers;
   double radius_ = 8.0;
-  radius_ = filter_radius;
+  radius_ = local_frontier_filter_radius;
 
   ROS_DEBUG("found %lu frontiers from whole map\n", frontiers.size());
   for (size_t i = 0; i < frontiers.size(); ++i) {
@@ -222,20 +222,20 @@ void Explore::makePlan()
       filtered_frontiers.push_back(frontiers[i]);
     }
   }
-  ROS_DEBUG("filtered frontiers within filter_radius: %lu", filtered_frontiers.size());
+  ROS_DEBUG("filtered frontiers within local_frontier_filter_radius: %lu", filtered_frontiers.size());
   // for (size_t i = 0; i < filtered_frontiers.size(); ++i) {
   //   ROS_DEBUG("filtered frontier %zd cost: %f", i, filtered_frontiers[i].cost);
   // }
 
-  if (filtered_frontiers.size() <= radius_switch_num ) {
-    radius_ = wholemap_radius;
+  if (filtered_frontiers.size() <= min_local_frontiers ) {
+    radius_ = global_frontier_filter_radius;
     filtered_frontiers = frontiers; // Pass all the frontiers to pick from. 
     ROS_INFO("****Not enough frontiers within the filter radius || Expanding search to whole map\n****");
     ROS_DEBUG("****** current radius is --- %.2f\n********", radius_);
   }
   else{
     ROS_INFO("****Picking a frontier within the filter radius \n****");
-    radius_ = filter_radius;
+    radius_ = local_frontier_filter_radius;
     ROS_DEBUG("****** current radius is --- %.2f\n********", radius_);
   }
 
@@ -246,7 +246,7 @@ void Explore::makePlan()
   
 
   // publish frontiers as visualization markers
-  // if (filtered_frontiers.size() > termination_num){
+  // if (filtered_frontiers.size() > min_global_frontiers){
   //   if (visualize_) {
   //     visualizeFrontiers(filtered_frontiers);
   //   }
@@ -262,7 +262,7 @@ void Explore::makePlan()
                       });
   
   // TODO: check this stop condition 
-  if (frontier == filtered_frontiers.end() && (radius_ == wholemap_radius)) {
+  if (frontier == filtered_frontiers.end() && (radius_ == global_frontier_filter_radius)) {
     stop();
     return;
   }

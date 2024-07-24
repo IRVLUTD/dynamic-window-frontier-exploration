@@ -21,12 +21,12 @@ using costmap_2d::FREE_SPACE;
 
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
                                double potential_scale, double gain_scale,
-                               double min_frontier_size, double cluster_radius)
+                               double min_frontier_size, double min_frontier_spacing)
   : costmap_(costmap)
   , potential_scale_(potential_scale)
   , gain_scale_(gain_scale)
   , min_frontier_size_(min_frontier_size)
-  , cluster_radius_(cluster_radius)
+  , min_frontier_spacing_(min_frontier_spacing)
 {
 }
 
@@ -88,7 +88,7 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
         if (new_frontier.size * costmap_->getResolution() >= min_frontier_size_) {
           bool too_close = false;
           for (const auto& frontier : frontier_list) {
-            if (euclideanDistance(new_frontier.centroid, frontier.centroid) < cluster_radius_) {
+            if (euclideanDistance(new_frontier.centroid, frontier.centroid) < min_frontier_spacing_) {
               too_close = true;
               break;
             }
