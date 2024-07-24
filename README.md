@@ -1,3 +1,8 @@
+# dynamic-window-frontier-exploration
+This package is developed on top of the existing [explore_lite](https://wiki.ros.org/explore_lite) package.
+
+
+
 # m-explore
 
 [![Build Status](http://build.ros.org/job/Kdev__m_explore__ubuntu_xenial_amd64/badge/icon)](http://build.ros.org/job/Kdev__m_explore__ubuntu_xenial_amd64)
