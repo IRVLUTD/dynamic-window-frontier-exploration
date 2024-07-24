@@ -13,7 +13,8 @@
   <param name="min_frontier_size" value="0.75"/>
   <param name="filter_radius" value="4.0"/>
   <param name="radius_switch_num" value="2.0"/>
-  <param name="termination_num" value="3.0"/>
+  <param name="termination_num" value="30.0"/>
   <param name="wholemap_radius" value="15.0"/>
+  <param name="cluster_radius" value="2.0"/>
 </node>
 </launch>
